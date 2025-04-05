@@ -4,8 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/router"
 import Link from "next/link"
 import Head from "next/head"
-import axios from "axios"
 import { Eye, EyeOff, ChevronRight, ChevronLeft } from "lucide-react"
+import { useApi } from "../hooks/useApi"
 import AuthLayout from "../components/AuthLayout"
 
 export default function Register() {
@@ -20,8 +20,7 @@ export default function Register() {
     tanggal_lahir: "",
     alamat: "",
   })
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
+  const { loading, error, callApi } = useApi()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [step, setStep] = useState(1)
@@ -95,9 +94,6 @@ export default function Register() {
       return
     }
 
-    setLoading(true)
-    setError("")
-
     const dataToSend = { ...formData }
 
     // Jika role adalah 'admin', pastikan field tambahan diisi dengan nilai kosong
@@ -107,31 +103,30 @@ export default function Register() {
       delete dataToSend.alamat
     }
 
-    try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/register/`, dataToSend)
+    const result = await callApi('post', `${process.env.NEXT_PUBLIC_AUTH_API_URL}/auth/register/`, dataToSend)
 
+    if (result.success) {
       // Simpan token ke localStorage
-      localStorage.setItem("accessToken", response.data.access)
-      localStorage.setItem("refreshToken", response.data.refresh)
-      localStorage.setItem("user", JSON.stringify(response.data.user))
+      localStorage.setItem("accessToken", result.data.access)
+      localStorage.setItem("refreshToken", result.data.refresh)
+      localStorage.setItem("user", JSON.stringify(result.data.user))
 
       // Arahkan ke halaman sesuai role
-      if (response.data.user.role === "admin") {
+      if (result.data.user.role === "admin") {
         router.push("/admin-dashboard")
       } else {
         router.push("/siswa-dashboard")
       }
-    } catch (err) {
-      console.error("Registration failed:", err)
-      setError(
-        err.response?.data?.detail ||
-          Object.values(err.response?.data || {})
-            .flat()
-            .join(", ") ||
-          "Terjadi kesalahan saat registrasi.",
-      )
-    } finally {
-      setLoading(false)
+    } else if (result.validation) {
+      // Handle validation errors from API
+      if (typeof result.error === 'object') {
+        // Convert API validation errors to our format
+        const apiErrors = {}
+        Object.entries(result.error).forEach(([key, value]) => {
+          apiErrors[key] = Array.isArray(value) ? value[0] : value
+        })
+        setFormErrors(apiErrors)
+      }
     }
   }
 
@@ -461,4 +456,3 @@ export default function Register() {
     </AuthLayout>
   )
 }
-

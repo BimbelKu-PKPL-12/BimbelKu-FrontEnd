@@ -38,7 +38,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    const result = await callApi("post", `${process.env.NEXT_PUBLIC_API_URL}/auth/login/`, formData)
+    const result = await callApi("post", `${process.env.NEXT_PUBLIC_AUTH_API_URL}/auth/login/`, formData)
 
     if (result.success) {
       // Simpan token dan data user ke localStorage
@@ -185,4 +185,3 @@ export default function Login() {
     </AuthLayout>
   )
 }
-
