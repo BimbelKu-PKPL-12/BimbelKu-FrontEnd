@@ -5,6 +5,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useApi } from '../hooks/useApi';
 import { ArrowLeft } from 'lucide-react';
+import { data } from 'autoprefixer';
 
 export default function CreateBimbel() {
   const router = useRouter();
@@ -97,7 +98,11 @@ export default function CreateBimbel() {
     setSubmitting(true);
     
     try {
-      const result = await callApi('post', `${process.env.NEXT_PUBLIC_BIMBEL_API_URL}/bimbel/bimbels/`, formData);
+      const dataToSend = {
+        ...formData,
+        sisa_kuota: formData.kuota_awal // Set sisa_kuota sama dengan kuota_awal
+      };
+      const result = await callApi('post', `${process.env.NEXT_PUBLIC_BIMBEL_API_URL}/bimbel/bimbels/`, dataToSend);
       
       if (result.success) {
         router.push('/admin-dashboard');
