@@ -38,12 +38,15 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    // Debugging: tampilkan URL yang digunakan
+    console.log("Attempting login with URL:", `${process.env.NEXT_PUBLIC_AUTH_API_URL}/auth/login/`)
+
     const result = await callApi("post", `${process.env.NEXT_PUBLIC_AUTH_API_URL}/auth/login/`, formData)
 
     if (result.success) {
       // Simpan token dan data user ke localStorage
-      localStorage.setItem("accessToken", result.data.access)
-      localStorage.setItem("refreshToken", result.data.refresh)
+      localStorage.setItem("accessToken", result.data.accessToken)
+      localStorage.setItem("refreshToken", result.data.refreshToken)
       localStorage.setItem("user", JSON.stringify(result.data.user))
 
       // Check if there's a redirect URL stored

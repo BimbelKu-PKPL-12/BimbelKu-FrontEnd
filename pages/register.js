@@ -103,12 +103,15 @@ export default function Register() {
       delete dataToSend.alamat
     }
 
+    // Debugging: tampilkan URL yang digunakan
+    console.log("Attempting register with URL:", `${process.env.NEXT_PUBLIC_AUTH_API_URL}/auth/register/`)
+
     const result = await callApi('post', `${process.env.NEXT_PUBLIC_AUTH_API_URL}/auth/register/`, dataToSend)
 
     if (result.success) {
       // Simpan token ke localStorage
-      localStorage.setItem("accessToken", result.data.access)
-      localStorage.setItem("refreshToken", result.data.refresh)
+      localStorage.setItem("accessToken", result.data.accessToken)
+      localStorage.setItem("refreshToken", result.data.refreshToken)
       localStorage.setItem("user", JSON.stringify(result.data.user))
 
       // Arahkan ke halaman sesuai role

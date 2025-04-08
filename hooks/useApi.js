@@ -12,6 +12,7 @@ export function useApi() {
         throw new Error('Refresh token tidak ditemukan');
       }
 
+      // Update URL dengan path yang benar
       const response = await axios({
         method: 'post',
         url: `${process.env.NEXT_PUBLIC_AUTH_API_URL}/auth/token/refresh/`,
@@ -39,6 +40,9 @@ export function useApi() {
     setError(null);
     
     try {
+      // Debugging: tampilkan URL yang diakses
+      console.log(`[API Call] ${method.toUpperCase()} ${url}`);
+      
       // Cek apakah ada token
       const token = localStorage.getItem('accessToken');
       const headers = {};
@@ -57,6 +61,12 @@ export function useApi() {
       setLoading(false);
       return { data: response.data, success: true };
     } catch (err) {
+      console.error(`[API Error] ${err.message}`);
+      if (err.response) {
+        console.error(`[API Response Status] ${err.response.status}`);
+        console.error('[API Response Data]', err.response.data);
+      }
+      
       // Jika error 401 (Unauthorized) dan belum mencoba refresh token
       if (err.response && err.response.status === 401 && !retrying) {
         try {
@@ -85,6 +95,8 @@ export function useApi() {
           }
         } else if (err.response.status === 403) {
           errorMessage = 'Anda tidak memiliki izin untuk melakukan operasi ini';
+        } else if (err.response.status === 404) {
+          errorMessage = 'Endpoint tidak ditemukan. Periksa konfigurasi API URL.';
         } else {
           errorMessage = err.response.data?.error || 
                          err.response.data?.detail || 
@@ -101,5 +113,5 @@ export function useApi() {
     }
   };
 
-    return { loading, error, callApi };
+  return { loading, error, callApi };
 }
