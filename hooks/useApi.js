@@ -67,16 +67,23 @@ export function useApi() {
         console.error('[API Response Data]', err.response.data);
       }
       
-      // Jika error 401 (Unauthorized) dan belum mencoba refresh token
       if (err.response && err.response.status === 401 && !retrying) {
-        try {
-          // Coba refresh token dan ulangi request
-          await refreshToken();
-          return callApi(method, url, data, true);
-        } catch (refreshError) {
+        const isLoginRequest = url.includes('/auth/login/');
+        
+        if (isLoginRequest) {
           setLoading(false);
-          setError('Sesi Anda telah berakhir. Silakan login kembali.');
-          return { error: 'Sesi Anda telah berakhir', success: false };
+          const errorMsg = 'Email atau password tidak valid';
+          setError(errorMsg);
+          return { error: errorMsg, success: false };
+        } else {
+          try {
+            await refreshToken();
+            return callApi(method, url, data, true);
+          } catch (refreshError) {
+            setLoading(false);
+            setError('Sesi Anda telah berakhir. Silakan login kembali.');
+            return { error: 'Sesi Anda telah berakhir', success: false };
+          }
         }
       }
       
